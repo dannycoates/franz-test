@@ -1,0 +1,17 @@
+{
+  "name": "franz-test",
+  "version": "0.7.4",
+  "description": "Functional tests for franz-kafka",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "async": "*",
+    "ejs": "*",
+    "franz-kafka": "0.7.4"
+  },
+  "repository": "",
+  "author": "Danny Coates",
+  "license": "MIT"
+}
