@@ -1,8 +1,7 @@
 var Kafka = require('franz-kafka')
-var cluster = require('./cluster')
+var cluster = require('../cluster')
 
 var message = new Buffer(10 * 1024)
-//message.fill('x')
 
 function run() {
 
@@ -11,7 +10,7 @@ function run() {
 		compression: 'gzip',
 		queueTime: 2000,
 		batchSize: 200,
-		//logger: console
+		logger: console
 	})
 
 	kafka.on(
@@ -19,6 +18,10 @@ function run() {
 		function (err) {
 			var foo = kafka.topic('foo')
 
+			foo.on('data', function (data) {
+				process.stdout.write('x')
+			})
+			foo.resume()
 			var i = setInterval(foo.write.bind(foo, message), 10)
 			setTimeout(
 				function () {
@@ -26,7 +29,7 @@ function run() {
 					kafka.close()
 					cluster.stop()
 				},
-				1000 * 60//30000
+				1000 * 30
 			)
 		}
 	)

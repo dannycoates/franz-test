@@ -4,12 +4,13 @@
   "description": "Functional tests for franz-kafka",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node node_modules/tap/bin/tap.js ./test"
   },
   "dependencies": {
     "async": "*",
     "ejs": "*",
-    "franz-kafka": "0.7.4"
+    "franz-kafka": "0.7.4",
+    "tap": "*"
   },
   "repository": "",
   "author": "Danny Coates",

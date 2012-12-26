@@ -1,9 +1,25 @@
 var Child = require('child_process')
 var fs = require('fs')
 var ejs = require('ejs')
+var path = require('path')
 
-var kafkaPropertiesTemplate = fs.readFileSync('config/server.properties.ejs', 'utf8')
-var classPath = ":kafka/bin/../project/boot/scala-2.8.0/lib/scala-compiler.jar:kafka/bin/../project/boot/scala-2.8.0/lib/scala-library.jar:kafka/bin/../core/target/scala_2.8.0/kafka-0.7.2.jar:kafka/bin/../core/lib/*.jar:kafka/bin/../perf/target/scala_2.8.0/kafka-perf-0.7.2.jar:kafka/bin/../core/lib_managed/scala_2.8.0/compile/jopt-simple-3.2.jar:kafka/bin/../core/lib_managed/scala_2.8.0/compile/log4j-1.2.15.jar:kafka/bin/../core/lib_managed/scala_2.8.0/compile/snappy-java-1.0.4.1.jar:kafka/bin/../core/lib_managed/scala_2.8.0/compile/zkclient-0.1.jar:kafka/bin/../core/lib_managed/scala_2.8.0/compile/zookeeper-3.3.4.jar"
+var kafkaPropertiesTemplate = fs.readFileSync(
+	path.join(__dirname, 'config/server.properties.ejs'),
+	'utf8'
+)
+
+var classPath = [
+	"kafka/project/boot/scala-2.8.0/lib/scala-compiler.jar",
+	"kafka/project/boot/scala-2.8.0/lib/scala-library.jar",
+	"kafka/core/target/scala_2.8.0/kafka-0.7.2.jar",
+	"kafka/core/lib/*.jar",
+	"kafka/perf/target/scala_2.8.0/kafka-perf-0.7.2.jar",
+	"kafka/core/lib_managed/scala_2.8.0/compile/jopt-simple-3.2.jar",
+	"kafka/core/lib_managed/scala_2.8.0/compile/log4j-1.2.15.jar",
+	"kafka/core/lib_managed/scala_2.8.0/compile/snappy-java-1.0.4.1.jar",
+	"kafka/core/lib_managed/scala_2.8.0/compile/zkclient-0.1.jar",
+	"kafka/core/lib_managed/scala_2.8.0/compile/zookeeper-3.3.4.jar"
+].join(':')
 
 var zookeeper = null
 var kafkas = {}
@@ -11,7 +27,7 @@ var kafkas = {}
 function noop() {}
 
 function cleanup(cb) {
-		Child.exec("rm -rf tmp; mkdir -p ./tmp/config", cb)
+		Child.exec("rm -rf tmp; mkdir -p ./tmp/config", { cwd: __dirname }, cb)
 }
 
 function spawnZookeeper() {
@@ -20,16 +36,19 @@ function spawnZookeeper() {
 		[
 			"-Xmx512M",
 			"-server",
-			"-Dlog4j.configuration=file:kafka/bin/../config/log4j.properties",
+			"-Dlog4j.configuration=file:config/log4j.properties",
 			"-cp", classPath,
 			"org.apache.zookeeper.server.quorum.QuorumPeerMain",
 			"config/zookeeper.properties"
-		]
+		],
+		{
+			cwd: __dirname
+		}
 	)
 }
 
 function spawnKafka(id) {
-	var configFilename = 'tmp/config/server' + id + '.properties'
+	var configFilename = path.join(__dirname, 'tmp/config/server' + id + '.properties')
 	fs.writeFileSync(
 		configFilename,
 		ejs.render(kafkaPropertiesTemplate, { brokerId: id })
@@ -39,11 +58,14 @@ function spawnKafka(id) {
 		[
 			"-Xmx512M",
 			"-server",
-			"-Dlog4j.configuration=file:kafka/bin/../config/log4j.properties",
+			"-Dlog4j.configuration=file:config/log4j.properties",
 			"-cp", classPath,
 			"kafka.Kafka",
 			configFilename
-		]
+		],
+		{
+			cwd: __dirname
+		}
 	)
 }
 
